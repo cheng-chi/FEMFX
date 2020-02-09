@@ -1001,7 +1001,7 @@ SIMD_VECTORMATH_FORCE_INLINE const SimdVector4 mul(const SimdMatrix4 & mat, cons
     SimdVector4 col0 = mat.col0;
     SimdVector4 col1 = mat.col1;
     SimdVector4 col2 = mat.col2;
-    SimdVector4 col3 = mat.col3;
+    // unused? SimdVector4 col3 = mat.col3;
     return SimdVector4(
         _mm_add_ps(
             _mm_add_ps(_mm_mul_ps(col0.get128(), _mm_shuffle_ps(vec.get128(), vec.get128(), _MM_SHUFFLE(0,0,0,0))), _mm_mul_ps(col1.get128(), _mm_shuffle_ps(vec.get128(), vec.get128(), _MM_SHUFFLE(1,1,1,1)))),

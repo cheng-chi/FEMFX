@@ -499,12 +499,20 @@ namespace FmVectormath {
 
     SIMD_VECTORMATH_FORCE_INLINE uint32_t Soa8Uint::getSlice(uint32_t idx) const
     {
+#if defined(_MSC_VER)
         return mData.m256i_i32[idx];
+#else
+        return mData[idx];
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE void Soa8Uint::setSlice(uint32_t idx, uint32_t value)
     {
+#if defined(_MSC_VER)
         mData.m256i_i32[idx] = value;
+#else
+        mData[idx] = value;
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE const Soa8Uint Soa8Uint::operator ++ (int)

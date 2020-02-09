@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 #include <algorithm>
 
-#ifdef _WIN32
+#ifdef __MSC_VER
 #include <malloc.h>
 #include <intrin.h> // for __lzcnt
 #endif
@@ -89,17 +89,17 @@ namespace AMD
     // Count leading zeros
     static FM_FORCE_INLINE uint FmCountLeadingZeros(uint x)
     {
-#ifdef WIN32
+#ifdef _MSC_VER
         return __lzcnt(x);
+#else
+				return __builtin_ia32_lzcnt_u32(x);
 #endif
     }
 
     // Count set bits
     static FM_FORCE_INLINE uint FmCountSetBits(uint x)
     {
-#ifdef WIN32
         return (int)_mm_popcnt_u32(x);
-#endif
     }
 
     static FM_FORCE_INLINE uint FmIntLog2(uint x)

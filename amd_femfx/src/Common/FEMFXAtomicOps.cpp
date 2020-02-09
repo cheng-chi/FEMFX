@@ -40,7 +40,7 @@ namespace AMD
 
             if (newValue > maxValue)
             {
-                int32_t compareValue = InterlockedCompareExchange(pValue, newValue, initialVal);
+                int32_t compareValue = FmAtomicCompareExchange(pValue, newValue, initialVal);
                 if (compareValue == initialVal)
                 {
                     break;

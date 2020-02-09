@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include "FEMFXSleeping.h"
 
 #if FM_SOA_TRI_INTERSECTION
-#include "FEMFXSoATriIntersection.h"
+#include "FEMFXSoaTriIntersection.h"
 #endif
 #if FM_SOA_TRI_CCD
 #include "FEMFXSoaTriCcd.h"
@@ -1261,7 +1261,7 @@ namespace AMD
         FmSetSoaFromAlignedAos(&vfBatch.pairData.fBvel[0], vfBatch.fBvel0);
         FmSetSoaFromAlignedAos(&vfBatch.pairData.fBvel[1], vfBatch.fBvel1);
         FmSetSoaFromAlignedAos(&vfBatch.pairData.fBvel[2], vfBatch.fBvel2);
-        vfBatch.pairData.i = SoaTypes::SoaUint(vfBatch.i);
+        vfBatch.pairData.i = typename SoaTypes::SoaUint(vfBatch.i);
 
         FmVertexFaceCcd(&result, vfBatch.pairData, collidedPair->timestep, soaConditions);
 
@@ -1295,7 +1295,7 @@ namespace AMD
         FmSetSoaFromAlignedAos(&fvBatch.pairData.fAvel[2], fvBatch.fAvel2);
         FmSetSoaFromAlignedAos(&fvBatch.pairData.vBpos, fvBatch.vBpos);
         FmSetSoaFromAlignedAos(&fvBatch.pairData.vBvel, fvBatch.vBvel);
-        fvBatch.pairData.j = SoaTypes::SoaUint(fvBatch.j);
+        fvBatch.pairData.j = typename SoaTypes::SoaUint(fvBatch.j);
 
         FmFaceVertexCcd(&result, fvBatch.pairData, collidedPair->timestep, soaConditions);
 
@@ -1329,8 +1329,8 @@ namespace AMD
         FmSetSoaFromAlignedAos(&eeBatch.pairData.eBpos[1], eeBatch.eBpos1);
         FmSetSoaFromAlignedAos(&eeBatch.pairData.eBvel[0], eeBatch.eBvel0);
         FmSetSoaFromAlignedAos(&eeBatch.pairData.eBvel[1], eeBatch.eBvel1);
-        eeBatch.pairData.i = SoaTypes::SoaUint(eeBatch.i);
-        eeBatch.pairData.j = SoaTypes::SoaUint(eeBatch.j);
+        eeBatch.pairData.i = typename SoaTypes::SoaUint(eeBatch.i);
+        eeBatch.pairData.j = typename SoaTypes::SoaUint(eeBatch.j);
 
         FmEdgeEdgeCcd(&result, eeBatch.pairData, collidedPair->timestep, soaConditions);
 

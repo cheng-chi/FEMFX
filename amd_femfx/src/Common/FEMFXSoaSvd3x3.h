@@ -64,7 +64,7 @@ namespace AMD
 
         const int numIterations = 4;
 
-        typename T::SoaMatrix3 V = typename T::SoaMatrix3::identity();
+        typename T::SoaMatrix3 V = T::SoaMatrix3::identity();
 
         for (int i = 0; i < numIterations; i++)
         {

@@ -178,7 +178,7 @@ namespace AMD
 
         // Updated plasticity state
         typename T::SoaMatrix3 plasticDeformationMatrix;
-        typename FmSoaTetShapeParams<T> plasticShapeParams;
+        FmSoaTetShapeParams<T> plasticShapeParams;
 #if FM_COMPUTE_PLASTIC_REL_ROTATION            
         typename T::SoaMatrix3 plasticTetRelRotation;
 #endif
@@ -271,18 +271,18 @@ namespace AMD
 #endif
             }
 
-            input.shapeParams.det = SoaTypes::SoaFloat(0.0f);
-            input.stressShapeParams.det = SoaTypes::SoaFloat(0.0f);
-            input.youngsModulus = SoaTypes::SoaFloat(0.0f);
-            input.poissonsRatio = SoaTypes::SoaFloat(0.0f);
-            input.fractureStressThreshold = SoaTypes::SoaFloat(0.0f);
-            input.plasticYieldThreshold = SoaTypes::SoaFloat(0.0f);
-            input.plasticCreep = SoaTypes::SoaFloat(0.0f);
-            input.plasticMin = SoaTypes::SoaFloat(0.0f);
-            input.plasticMax = SoaTypes::SoaFloat(0.0f);
-            input.preserveVolume = SoaTypes::SoaFloat(0.0f);
-            input.testFracture = SoaTypes::SoaFloat(0.0f);
-            input.updatePlasticity = SoaTypes::SoaFloat(0.0f);
+            input.shapeParams.det = typename SoaTypes::SoaFloat(0.0f);
+            input.stressShapeParams.det = typename SoaTypes::SoaFloat(0.0f);
+            input.youngsModulus = typename SoaTypes::SoaFloat(0.0f);
+            input.poissonsRatio = typename SoaTypes::SoaFloat(0.0f);
+            input.fractureStressThreshold = typename SoaTypes::SoaFloat(0.0f);
+            input.plasticYieldThreshold = typename SoaTypes::SoaFloat(0.0f);
+            input.plasticCreep = typename SoaTypes::SoaFloat(0.0f);
+            input.plasticMin = typename SoaTypes::SoaFloat(0.0f);
+            input.plasticMax = typename SoaTypes::SoaFloat(0.0f);
+            input.preserveVolume = typename SoaTypes::SoaFloat(0.0f);
+            input.testFracture = typename SoaTypes::SoaFloat(0.0f);
+            input.updatePlasticity = typename SoaTypes::SoaFloat(0.0f);
         }
 
         void SetBatchSlice(
@@ -761,7 +761,7 @@ namespace AMD
                 Fphat.y = powf(elasticDeformation.y, plasticPower);
                 Fphat.z = powf(elasticDeformation.z, plasticPower);
 
-                typename T::SoaMatrix3 contribution = mul(mul(V, typename T::SoaMatrix3::scale(Fphat)), transpose(V));
+                typename T::SoaMatrix3 contribution = mul(mul(V, T::SoaMatrix3::scale(Fphat)), transpose(V));
 
                 plasticDeformationMatrix = mul(contribution, plasticDeformationMatrix);
 
@@ -784,7 +784,7 @@ namespace AMD
                     totalPlasticDeformation = select(totalPlasticDeformation, totalPlasticDeformation * powf(plasticDet, -(1.0f / 3.0f)), preserveVolume);
                 }
 
-                plasticDeformationMatrix = mul(mul(V, typename T::SoaMatrix3::scale(totalPlasticDeformation)), transpose(V));
+                plasticDeformationMatrix = mul(mul(V, T::SoaMatrix3::scale(totalPlasticDeformation)), transpose(V));
 
                 // Adjust stress and strain matrices to match the displaced rest positions.  This has seemed to fix some false 
                 // motion issues seen in some plastically deformed objects when they aren't pinned down by kinematic vertices.

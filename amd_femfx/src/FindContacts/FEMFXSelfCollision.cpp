@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 #include "FEMFXInternal.h"
-#include "FEMFXTriCCD.h"
+#include "FEMFXTriCcd.h"
 #include "FEMFXSort.h"
 
 namespace AMD

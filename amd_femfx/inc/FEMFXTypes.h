@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include "FEMFXVectorMath.h"
 
-#ifdef WIN32
+#if defined(_MSC_VER)
 #define FM_FORCE_INLINE __forceinline
 #define FM_RESTRICT __restrict
 #define FM_ALIGN_OF(x) __alignof(x)
@@ -37,7 +37,12 @@ THE SOFTWARE.
 #define FM_ALIGN_END(x)
 #define FM_THREAD_LOCAL_STORAGE __declspec(thread)
 #else
-#error "Undefined"
+#define FM_FORCE_INLINE __attribute__((always_inline)) inline
+#define FM_RESTRICT __restrict__
+#define FM_ALIGN_OF(x) __alignof__(x)
+#define FM_ALIGN(x) __attribute__((aligned(x)))
+#define FM_ALIGN_END(x)
+#define FM_THREAD_LOCAL_STORAGE __thread
 #endif
 
 #ifdef _DEBUG

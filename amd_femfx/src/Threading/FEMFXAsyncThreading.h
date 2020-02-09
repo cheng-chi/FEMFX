@@ -56,6 +56,10 @@ namespace AMD
         FmTask() : func(NULL), data(NULL), beginIndex(0), endIndex(0) {}
     };
 
+    // Set next task for thread to execute in FmExecuteTask() loop
+    void FmSetNextTask(FmTaskFuncCallback taskFunc, void* taskData, int32_t taskBeginIndex, int32_t taskEndIndex);
+    void FmSetNextTask(const FmTask& inTask);
+
     // Holds an atomic count of incomplete tasks, and the follow-up task to execute when all tasks are complete.
     class FmAsyncTasksProgress
     {
@@ -196,8 +200,4 @@ namespace AMD
 
     // Async tasks need to be executed using this function, which starts a loop that will pick up subsequent tasks set by FmSetNextTask()
     void FmExecuteTask(FmTaskFuncCallback taskFunc, void* taskData, int32_t taskBeginIndex, int32_t taskEndIndex);
-
-    // Set next task for thread to execute in FmExecuteTask() loop
-    void FmSetNextTask(FmTaskFuncCallback taskFunc, void* taskData, int32_t taskBeginIndex, int32_t taskEndIndex);
-    void FmSetNextTask(const FmTask& inTask);
 }

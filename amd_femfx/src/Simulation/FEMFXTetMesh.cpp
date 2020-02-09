@@ -761,8 +761,12 @@ namespace AMD
 
     void FmWriteTetMesh(const char* filename, FmTetMesh* tetMesh)
     {
+#if defined(_MSC_VER)
         FILE* fp;
         fopen_s(&fp, filename, "wb");
+#else
+				FILE* fp = fopen(filename, "wb");
+#endif
 
         if (!fp)
         {
@@ -821,8 +825,12 @@ namespace AMD
 
     void FmReadTetMesh(const char* filename, FmTetMesh* tetMesh)
     {
+#if defined(_MSC_VER)
         FILE* fp;
         fopen_s(&fp, filename, "rb");
+#else
+				FILE* fp = fopen(filename, "rb");
+#endif
 
         if (!fp)
         {

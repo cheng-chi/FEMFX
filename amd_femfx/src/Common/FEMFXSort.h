@@ -160,105 +160,8 @@ namespace AMD
 
         void CreateAndRunGraph(
             T** outElemsSorted, T* inElemsUnsorted, T* inElemsBuffer, uint inNumElements,
-            void* inSortClassUserData, 
-            uint inMaxSortNodes, uint inBatchSize, FmTaskFuncCallback followTask, void* followTaskData)
-        {
-            (void)inElemsBuffer;
-            *outElemsSorted = inElemsUnsorted;
-
-            if (inNumElements < 2)
-            {
-                FmSetNextTask(followTask, followTaskData, 0, 1);
-                return;
-            }
-
-            // Use power of two nodes
-            numSortNodes = FmNextPowerOf2(inMaxSortNodes);
-            pElemsBuffer[0] = inElemsUnsorted;
-            pElemsBuffer[1] = inElemsBuffer;
-            numElements = inNumElements;
-            sortClassUserData = inSortClassUserData;
-
-            // Reduce number of nodes for sufficient batch size
-            uint batchSize = inNumElements / numSortNodes;
-            while (batchSize < inBatchSize && numSortNodes > 1)
-            {
-                numSortNodes /= 2;
-                batchSize = inNumElements / numSortNodes;
-            }
-
-            if (numSortNodes == 1)
-            {
-                // Sort inline
-                FmSort<T, CompareClass>(inElemsUnsorted, numElements, sortClassUserData);
-                FmSetNextTask(followTask, followTaskData, 0, 1);
-                return;
-            }
-
-            // Create nodes
-            uint numMergeNodes = numSortNodes - 1;
-
-            nodes = new FmSortTaskGraphNode[numSortNodes + numMergeNodes];
-
-            for (uint i = 0; i < numSortNodes; i++)
-            {
-                nodes[i].Init("FmSortNode", this, FmSortTask<T, CompareClass>, FmSortTaskWrapped<T, CompareClass>, i);
-
-                uint nodeBeginIndex, nodeEndIndex;
-                FmGetIndexRangeEvenDistribution(&nodeBeginIndex, &nodeEndIndex, i, numSortNodes, numElements);
-
-                nodes[i].beginIndex = nodeBeginIndex;
-                nodes[i].middleIndex = nodeEndIndex;
-                nodes[i].endIndex = nodeEndIndex;
-
-                AddToStart(&nodes[i]);
-            }
-
-            for (uint i = numSortNodes; i < numSortNodes + numMergeNodes; i++)
-            {
-                nodes[i].Init("FmMergeNode", this, FmMergeTask<T, CompareClass>, FmMergeTaskWrapped<T, CompareClass>, i);
-            }
-
-            uint levelNumNodes = numSortNodes;
-            uint levelBeginIndex = 0;
-            uint srcBufferIndex = 0;  // First merge level will use src buffer 0
-
-            while (levelNumNodes >= 2)
-            {
-                for (uint i = 0; i < levelNumNodes; i++)
-                {
-                    uint nodeIdx = levelBeginIndex + i;
-                    uint successorIdx = levelBeginIndex + levelNumNodes + i / 2;
-
-                    nodes[nodeIdx].AddSuccessor(&nodes[successorIdx]);
-
-                    nodes[successorIdx].srcBufferIndex = srcBufferIndex;
-
-                    if (i % 2 == 0)
-                    {
-                        nodes[successorIdx].beginIndex = nodes[nodeIdx].beginIndex;
-                    }
-                    else
-                    {
-                        nodes[successorIdx].middleIndex = nodes[nodeIdx].beginIndex;
-                        nodes[successorIdx].endIndex = nodes[nodeIdx].endIndex;
-                    }
-                }
-
-                srcBufferIndex = 1 - srcBufferIndex;
-                levelBeginIndex += levelNumNodes;
-                levelNumNodes /= 2;
-            }
-
-            //*outElemsSorted = pElemsBuffer[srcBufferIndex];
-            *outElemsSorted = pElemsBuffer[0];
-
-#if FM_ASYNC_THREADING
-            StartAsync(followTask, followTaskData);
-#else
-            StartAndWait();
-#endif
-        }
+            void* inSortClassUserData,
+            uint inMaxSortNodes, uint inBatchSize, FmTaskFuncCallback followTask, void* followTaskData);
     };
 
     template<class T, class CompareClass>
@@ -306,5 +209,108 @@ namespace AMD
     {
         FmExecuteTask(FmMergeTask<T, CompareClass>, inTaskData, inTaskBeginIndex, inTaskEndIndex);
     }
+
+    template<class T, class CompareClass>
+		void FmSortTaskGraph<T, CompareClass>::CreateAndRunGraph(
+				T** outElemsSorted, T* inElemsUnsorted, T* inElemsBuffer, uint inNumElements,
+				void* inSortClassUserData,
+				uint inMaxSortNodes, uint inBatchSize, FmTaskFuncCallback followTask, void* followTaskData)
+		{
+				(void)inElemsBuffer;
+				*outElemsSorted = inElemsUnsorted;
+
+				if (inNumElements < 2)
+				{
+						FmSetNextTask(followTask, followTaskData, 0, 1);
+						return;
+				}
+
+				// Use power of two nodes
+				numSortNodes = FmNextPowerOf2(inMaxSortNodes);
+				pElemsBuffer[0] = inElemsUnsorted;
+				pElemsBuffer[1] = inElemsBuffer;
+				numElements = inNumElements;
+				sortClassUserData = inSortClassUserData;
+
+				// Reduce number of nodes for sufficient batch size
+				uint batchSize = inNumElements / numSortNodes;
+				while (batchSize < inBatchSize && numSortNodes > 1)
+				{
+						numSortNodes /= 2;
+						batchSize = inNumElements / numSortNodes;
+				}
+
+				if (numSortNodes == 1)
+				{
+						// Sort inline
+						FmSort<T, CompareClass>(inElemsUnsorted, numElements, sortClassUserData);
+						FmSetNextTask(followTask, followTaskData, 0, 1);
+						return;
+				}
+
+				// Create nodes
+				uint numMergeNodes = numSortNodes - 1;
+
+				nodes = new FmSortTaskGraphNode[numSortNodes + numMergeNodes];
+
+				for (uint i = 0; i < numSortNodes; i++)
+				{
+						nodes[i].Init("FmSortNode", this, FmSortTask<T, CompareClass>, FmSortTaskWrapped<T, CompareClass>, i);
+
+						uint nodeBeginIndex, nodeEndIndex;
+						FmGetIndexRangeEvenDistribution(&nodeBeginIndex, &nodeEndIndex, i, numSortNodes, numElements);
+
+						nodes[i].beginIndex = nodeBeginIndex;
+						nodes[i].middleIndex = nodeEndIndex;
+						nodes[i].endIndex = nodeEndIndex;
+
+						AddToStart(&nodes[i]);
+				}
+
+				for (uint i = numSortNodes; i < numSortNodes + numMergeNodes; i++)
+				{
+						nodes[i].Init("FmMergeNode", this, FmMergeTask<T, CompareClass>, FmMergeTaskWrapped<T, CompareClass>, i);
+				}
+
+				uint levelNumNodes = numSortNodes;
+				uint levelBeginIndex = 0;
+				uint srcBufferIndex = 0;  // First merge level will use src buffer 0
+
+				while (levelNumNodes >= 2)
+				{
+						for (uint i = 0; i < levelNumNodes; i++)
+						{
+								uint nodeIdx = levelBeginIndex + i;
+								uint successorIdx = levelBeginIndex + levelNumNodes + i / 2;
+
+								nodes[nodeIdx].AddSuccessor(&nodes[successorIdx]);
+
+								nodes[successorIdx].srcBufferIndex = srcBufferIndex;
+
+								if (i % 2 == 0)
+								{
+										nodes[successorIdx].beginIndex = nodes[nodeIdx].beginIndex;
+								}
+								else
+								{
+										nodes[successorIdx].middleIndex = nodes[nodeIdx].beginIndex;
+										nodes[successorIdx].endIndex = nodes[nodeIdx].endIndex;
+								}
+						}
+
+						srcBufferIndex = 1 - srcBufferIndex;
+						levelBeginIndex += levelNumNodes;
+						levelNumNodes /= 2;
+				}
+
+				//*outElemsSorted = pElemsBuffer[srcBufferIndex];
+				*outElemsSorted = pElemsBuffer[0];
+
+#if FM_ASYNC_THREADING
+				StartAsync(followTask, followTaskData);
+#else
+				StartAndWait();
+#endif
+		}
 
 }

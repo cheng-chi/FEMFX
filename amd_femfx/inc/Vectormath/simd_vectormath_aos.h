@@ -39,7 +39,9 @@
 #include <stdio.h>
 #endif
 
+#if defined(_MSC_VER)
 #pragma warning(disable : 4201)
+#endif
 
 namespace FmVectormath {
 
@@ -2214,7 +2216,9 @@ SIMD_VECTORMATH_FORCE_INLINE void print( const SimdTransform3 & tfrm, const char
 
 } // namespace FmVectormath
 
+#if defined(_MSC_VER)
 #pragma warning(default : 4201)
+#endif
 
 #include "simd_vec_aos.h"
 #include "simd_quat_aos.h"

@@ -31,7 +31,11 @@
 #define _SOA_FLOAT_H
 
 #include "vectormath_utils.h"
+#if defined(_MSC_VER)
 #pragma warning(push, 0)
+#else
+#pragma pack(push, 0)
+#endif
 #ifndef USE_SSE2
 #define USE_SSE2
 #endif
@@ -40,7 +44,11 @@
 #endif
 #include "sse_mathfun.h"
 #include "avx_mathfun.h"
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#else
+#pragma pack(pop)
+#endif
 
 namespace FmVectormath {
 
@@ -518,6 +526,7 @@ namespace FmVectormath {
         float scalar0, float scalar1, float scalar2, float scalar3,
         float scalar4, float scalar5, float scalar6, float scalar7)
     {
+#if defined(_MSC_VER)
         mData.m256_f32[0] = scalar0;
         mData.m256_f32[1] = scalar1;
         mData.m256_f32[2] = scalar2;
@@ -526,6 +535,16 @@ namespace FmVectormath {
         mData.m256_f32[5] = scalar5;
         mData.m256_f32[6] = scalar6;
         mData.m256_f32[7] = scalar7;
+#else
+        mData[0] = scalar0;
+        mData[1] = scalar1;
+        mData[2] = scalar2;
+        mData[3] = scalar3;
+        mData[4] = scalar4;
+        mData[5] = scalar5;
+        mData[6] = scalar6;
+        mData[7] = scalar7;
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE Soa8Float::Soa8Float(const Soa8Bool & vec)
@@ -540,12 +559,20 @@ namespace FmVectormath {
 
     SIMD_VECTORMATH_FORCE_INLINE float Soa8Float::getSlice(uint32_t idx) const
     {
+#if defined(_MSC_VER)
         return mData.m256_f32[idx];
+#else
+				return mData[idx];
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE void Soa8Float::setSlice(uint32_t idx, float value)
     {
+#if defined(_MSC_VER)
         mData.m256_f32[idx] = value;
+#else
+        mData[idx] = value;
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE const Soa8Float Soa8Float::operator ++ (int)

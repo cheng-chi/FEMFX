@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "FEMFXCollisionPairData.h"
 #include "FEMFXBoxCcd.h"
 #if FM_SOA_TRI_INTERSECTION
-#include "FEMFXSoATriIntersection.h"
+#include "FEMFXSoaTriIntersection.h"
 #endif
 #include "FEMFXScene.h"
 #include "FEMFXSleeping.h"

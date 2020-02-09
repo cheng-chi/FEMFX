@@ -46,8 +46,12 @@ THE SOFTWARE.
 
 #define FM_NORMALIZE_MAG_SQR_TOL 1.0e-30f
 
-#ifndef FM_FORCE_INLINE 
+#ifndef FM_FORCE_INLINE
+#if defined(_MSC_VER)
 #define FM_FORCE_INLINE __forceinline
+#else
+#define FM_FORCE_INLINE __attribute__((always_inline)) inline
+#endif
 #endif
 
 namespace AMD

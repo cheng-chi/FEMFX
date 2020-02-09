@@ -85,7 +85,7 @@ namespace AMD
 
     // Init hash set with provided memory for elements and initialize keys to invalid.
     template< class KeyValue, class SetFuncs >
-    void FmInitHashSet(FmHashSet<KeyValue, SetFuncs>* hashSet, typename KeyValue* pElements, uint maxElements)
+    void FmInitHashSet(FmHashSet<KeyValue, SetFuncs>* hashSet, KeyValue* pElements, uint maxElements)
     {
         hashSet->elements = pElements;
         hashSet->maxElements = maxElements;
@@ -272,7 +272,7 @@ namespace AMD
         uint maxElements, maxSets;
         FmGetExpandableHashSetSizes(&maxElements, &maxSets, numElements);
 
-        return sizeof(FmExpandableHashSet) + sizeof(KeyValue) * maxElements + sizeof(FmHashSet< KeyValue, SetFuncs >) * maxSets;
+        return sizeof(FmExpandableHashSet<KeyValue, SetFuncs>) + sizeof(KeyValue) * maxElements + sizeof(FmHashSet< KeyValue, SetFuncs >) * maxSets;
     }
 
 

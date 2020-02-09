@@ -24,6 +24,9 @@ THE SOFTWARE.
 
 #pragma once
 
+#if !defined(_MSC_VER)
+#include <string.h> // memcpy
+#endif
 #include <stdint.h>
 #include <math.h>
 #include <xmmintrin.h>
@@ -41,8 +44,13 @@ THE SOFTWARE.
 #define SIMD_UTILS_USE_SSE4_DP_PS        (0 && SIMD_UTILS_USE_SSE4)
 #define SIMD_UTILS_USE_SSE4_MULLO_EPI32  (1 && SIMD_UTILS_USE_SSE4)
 
+#if defined(_MSC_VER)
 #define SIMD_UTILS_ALIGN16      __declspec(align(16))
 #define SIMD_UTILS_FORCE_INLINE __forceinline
+#else
+#define SIMD_UTILS_ALIGN16      __attribute__((aligned(16)))
+#define SIMD_UTILS_FORCE_INLINE __attribute__((always_inline)) inline
+#endif
 
 union Simd128Union
 {
@@ -86,23 +94,42 @@ static SIMD_UTILS_FORCE_INLINE float simd_getw_ps(__m128 m)
 
 static SIMD_UTILS_FORCE_INLINE float simd_getelem_ps(__m128 m, int idx)
 {
+#if defined(_MSC_VER)
     return m.m128_f32[idx];
+#else
+		return m[idx];
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE int32_t simd_getelem_epi32(__m128 m, int idx)
 {
+#if defined(_MSC_VER)
     return m.m128_i32[idx];
+#else
+		int i;
+		float f = m[idx];
+		memcpy(&i, &f, sizeof(i));
+		return i;
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE int32_t simd_getelem_epi32(__m128i m, int idx)
 {
+#if defined(_MSC_VER)
     return m.m128i_i32[idx];
+#else
+		return m[idx];
+#endif
 }
 
 #if SIMD_UTILS_USE_AVX
 static SIMD_UTILS_FORCE_INLINE float simd_getelem_ps(__m256 m, int idx)
 {
+#if defined(_MSC_VER)
     return m.m256_f32[idx];
+#else
+		return m[idx];
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE int32_t simd_getelem_epi32(__m256 m, int idx)
@@ -114,7 +141,11 @@ static SIMD_UTILS_FORCE_INLINE int32_t simd_getelem_epi32(__m256 m, int idx)
 
 static SIMD_UTILS_FORCE_INLINE int32_t simd_getelem_epi32(__m256i m, int idx)
 {
+#if defined(_MSC_VER)
     return m.m256i_i32[idx];
+#else
+		return m[idx];
+#endif
 }
 #endif
 
@@ -223,23 +254,41 @@ static SIMD_UTILS_FORCE_INLINE void simd_set_soa_vec4(__m256* x, __m256* y, __m2
 
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_ps(__m128& m, float value, int idx)
 {
+#if defined(_MSC_VER)
     m.m128_f32[idx] = value;
+#else
+		m[idx] = value;
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_epi32(__m128& m, int32_t value, int idx)
 {
+#if defined(_MSC_VER)
     m.m128_i32[idx] = value;
+#else
+		float f;
+		memcpy(&f, &value, sizeof(value));
+		m[idx] = f;
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_epi32(__m128i& m, int32_t value, int idx)
 {
+#if defined(_MSC_VER)
     m.m128i_i32[idx] = value;
+#else
+		m[idx] = value;
+#endif
 }
 
 #if SIMD_UTILS_USE_AVX
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_ps(__m256& m, float value, int idx)
 {
+#if defined(_MSC_VER)
     m.m256_f32[idx] = value;
+#else
+		m[idx] = value;
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_epi32(__m256& m, int32_t value, int idx)
@@ -252,7 +301,11 @@ static SIMD_UTILS_FORCE_INLINE void simd_setelem_epi32(__m256& m, int32_t value,
 
 static SIMD_UTILS_FORCE_INLINE void simd_setelem_epi32(__m256i& m, int32_t value, int idx)
 {
+#if defined(_MSC_VER)
     m.m256i_i32[idx] = value;
+#else
+		m[idx] = value;
+#endif
 }
 #endif
 
@@ -272,15 +325,25 @@ static SIMD_UTILS_FORCE_INLINE __m128 simd_load3_unaligned_ps(const float* fptr)
     m.m128_f32[1] = fptr[1];
     m.m128_f32[2] = fptr[2];
 #endif
+#if defined(_MSC_VER)
     m.m128_f32[3] = 0.0f;
+#else
+		m[3] = 0;
+#endif
     return m;
 }
 
 static SIMD_UTILS_FORCE_INLINE void simd_store3_unaligned_ps(float* fptr, __m128 m)
 {
+#if defined(_MSC_VER)
     fptr[0] = m.m128_f32[0];
     fptr[1] = m.m128_f32[1];
     fptr[2] = m.m128_f32[2];
+#else
+		fptr[0] = m[0];
+		fptr[1] = m[1];
+		fptr[2] = m[2];
+#endif
 }
 
 static SIMD_UTILS_FORCE_INLINE __m128i simd_load4_unaligned_ps(const int32_t* iptr)

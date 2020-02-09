@@ -1,3 +1,4 @@
+FEMFX_LIB_NAME = "amd_femfx"
 FEMFX_BASE_DIR = "../"
 FEMFX_SRC_DIR = FEMFX_BASE_DIR.."amd_femfx/src/"
 FEMFX_INC_DIR = FEMFX_BASE_DIR.."amd_femfx/inc/"
@@ -6,7 +7,10 @@ VECTORMATH_INC_DIR = FEMFX_BASE_DIR.."amd_femfx/inc/Vectormath/"
 TRACE_DIR = FEMFX_BASE_DIR.."external/trace/"
 SAMPLES_COMMON_DIR = FEMFX_BASE_DIR.."samples/common/"
 
+workspace "amd_femfx"
+	configurations { "Debug", "Release" }
     project (FEMFX_LIB_NAME)
+				buildoptions { "-mavx", "-mlzcnt", "-mfma", "-mavx2" }
         filename('%{prj.name}_'.._ACTION)
         kind "StaticLib"
         language "C++"

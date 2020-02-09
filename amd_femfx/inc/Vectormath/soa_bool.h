@@ -109,8 +109,8 @@ namespace FmVectormath {
     // select between vec0 and vec1 using Soa4Bool. false selects vec0, true selects vec1
     SIMD_VECTORMATH_FORCE_INLINE const Soa4Bool select(const Soa4Bool & vec0, const Soa4Bool & vec1, const Soa4Bool &select_vec1);
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool all(const Soa4Bool & vec);
-    SIMD_VECTORMATH_FORCE_INLINE const bool any(const Soa4Bool & vec);
+    SIMD_VECTORMATH_FORCE_INLINE bool all(const Soa4Bool & vec);
+    SIMD_VECTORMATH_FORCE_INLINE bool any(const Soa4Bool & vec);
 
     SIMD_VECTORMATH_FORCE_INLINE void print(const Soa4Bool & vec);
     SIMD_VECTORMATH_FORCE_INLINE void print(const Soa4Bool & vec, const char* name);
@@ -190,8 +190,8 @@ namespace FmVectormath {
     //
     SIMD_VECTORMATH_FORCE_INLINE const Soa8Bool select(const Soa8Bool & vec0, const Soa8Bool & vec1, const Soa8Bool &select_vec1);
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool all(const Soa8Bool & vec);
-    SIMD_VECTORMATH_FORCE_INLINE const bool any(const Soa8Bool & vec);
+    SIMD_VECTORMATH_FORCE_INLINE bool all(const Soa8Bool & vec);
+    SIMD_VECTORMATH_FORCE_INLINE bool any(const Soa8Bool & vec);
 
 #endif // SIMD_UTILS_USE_AVX
 
@@ -334,12 +334,12 @@ namespace FmVectormath {
         return Soa4Bool(simd_select_ps(vec0.get128(), vec1.get128(), select_vec1.get128()));
     }
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool all(const Soa4Bool & vec)
+    SIMD_VECTORMATH_FORCE_INLINE bool all(const Soa4Bool & vec)
     {
         return (_mm_movemask_ps(vec.get128()) == 0xf);
     }
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool any(const Soa4Bool & vec)
+    SIMD_VECTORMATH_FORCE_INLINE bool any(const Soa4Bool & vec)
     {
         return (_mm_movemask_ps(vec.get128()) != 0);
     }
@@ -388,6 +388,7 @@ namespace FmVectormath {
             bool scalar4, bool scalar5, bool scalar6, bool scalar7)
     {
         Simd256Union tmp;
+#if defined(_MSC_VER)
         tmp.vi.m256i_i32[0] = -((int)scalar0);
         tmp.vi.m256i_i32[1] = -((int)scalar1);
         tmp.vi.m256i_i32[2] = -((int)scalar2);
@@ -396,6 +397,16 @@ namespace FmVectormath {
         tmp.vi.m256i_i32[5] = -((int)scalar5);
         tmp.vi.m256i_i32[6] = -((int)scalar6);
         tmp.vi.m256i_i32[7] = -((int)scalar7);
+#else
+        tmp.i[0] = -((int)scalar0);
+        tmp.i[1] = -((int)scalar1);
+        tmp.i[2] = -((int)scalar2);
+        tmp.i[3] = -((int)scalar3);
+        tmp.i[4] = -((int)scalar4);
+        tmp.i[5] = -((int)scalar5);
+        tmp.i[6] = -((int)scalar6);
+        tmp.i[7] = -((int)scalar7);
+#endif
         mData = tmp.vf;
     }
 
@@ -430,14 +441,22 @@ namespace FmVectormath {
     {
         Simd256Union tmp;
         tmp.vf = mData;
+#if defined(_MSC_VER)
         return (bool)(tmp.vi.m256i_i32[idx] != 0);
+#else
+        return (bool)(tmp.vi[idx] != 0);
+#endif
     }
 
     SIMD_VECTORMATH_FORCE_INLINE void Soa8Bool::setSlice(uint32_t idx, bool value)
     {
         Simd256Union tmp;
         tmp.vf = mData;
+#if defined(_MSC_VER)
         tmp.vi.m256i_i32[idx] = -(int)value;
+#else
+        tmp.vi[idx] = -(int)value;
+#endif
         mData = tmp.vf;
     }
 
@@ -500,12 +519,12 @@ namespace FmVectormath {
         return Soa8Bool(simd_select_ps(vec0.get256(), vec1.get256(), select_vec1.get256()));
     }
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool all(const Soa8Bool & vec)
+    SIMD_VECTORMATH_FORCE_INLINE bool all(const Soa8Bool & vec)
     {
         return (_mm256_movemask_ps(vec.get256()) == 0xff);
     }
 
-    SIMD_VECTORMATH_FORCE_INLINE const bool any(const Soa8Bool & vec)
+    SIMD_VECTORMATH_FORCE_INLINE bool any(const Soa8Bool & vec)
     {
         return (_mm256_movemask_ps(vec.get256()) != 0);
     }

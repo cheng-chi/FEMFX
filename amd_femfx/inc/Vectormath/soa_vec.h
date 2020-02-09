@@ -1402,14 +1402,14 @@ template< class SoaNFloat > SOA_VECTORMATH_FORCE_INLINE const SoaPoint3<SoaNFloa
 
 #ifdef _VECTORMATH_DEBUG
 
-template< class SoaNFloat > SOA_VECTORMATH_FORCE_INLINE void print( const SoaPoint3<SoaNFloat> & pnt )
+template< class SoaNFloat > SOA_VECTORMATH_FORCE_INLINE void print( const SoaPoint3<SoaNFloat> & vec )
 {
     print(vec.getX(), "x");
     print(vec.getY(), "y");
     print(vec.getZ(), "z");
 }
 
-template< class SoaNFloat > SOA_VECTORMATH_FORCE_INLINE void print( const SoaPoint3<SoaNFloat> & pnt, const char * name )
+template< class SoaNFloat > SOA_VECTORMATH_FORCE_INLINE void print( const SoaPoint3<SoaNFloat> & vec, const char * name )
 {
     printf("%s:\n", name);
     print(vec.getX(), "x");

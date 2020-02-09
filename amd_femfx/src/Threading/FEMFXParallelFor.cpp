@@ -60,7 +60,7 @@ namespace AMD
         }
     };
 
-    FM_THREAD_LOCAL_STORAGE FmTaskFuncLoopData gFEMFXTaskFuncLoopData;
+    thread_local FmTaskFuncLoopData gFEMFXTaskFuncLoopData;
 
     // Loop while there is a non-NULL task function set in gFEMFXTaskFuncLoopData.
     // Reduces use of stack with Async code.

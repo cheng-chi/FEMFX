@@ -192,10 +192,10 @@ namespace AMD
                 aosStressTetRotationCol2[sliceIdx] = FmInitVector3(0.0f);
             }
 
-            stressShapeParams.det = SoaTypes::SoaFloat(0.0f);
-            youngsModulus = SoaTypes::SoaFloat(0.0f);
-            poissonsRatio = SoaTypes::SoaFloat(0.0f);
-            meshSupportsPlasticity = SoaTypes::SoaBool(false);
+            stressShapeParams.det = typename SoaTypes::SoaFloat(0.0f);
+            youngsModulus = typename SoaTypes::SoaFloat(0.0f);
+            poissonsRatio = typename SoaTypes::SoaFloat(0.0f);
+            meshSupportsPlasticity = typename SoaTypes::SoaBool(false);
         }
 
         void SetBatchSlice(
