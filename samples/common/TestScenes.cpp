@@ -41,12 +41,20 @@ using namespace AMD;
 // Required allocator definitions
 void* FmAlignedMalloc(size_t size, size_t alignment)
 {
+#if defined(_MSC_VER)
     return _aligned_malloc(size, alignment);
+#else
+		return aligned_alloc(alignment, size);
+#endif
 }
 
 void FmAlignedFree(void* ptr)
 {
+#if defined(_MSC_VER)
     _aligned_free(ptr);
+#else
+		free(ptr);
+#endif
 }
 
 // Debug print definition

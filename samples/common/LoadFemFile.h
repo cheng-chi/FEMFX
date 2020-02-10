@@ -28,7 +28,7 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------------------
 #pragma once
 
-#include "FEMResource.h"
+#include "FemResource.h"
 
 namespace AMD
 {

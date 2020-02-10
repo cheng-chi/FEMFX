@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <intrin.h>
 #include <windows.h>
+#else
+#include <thread>
 #endif
 
 namespace AMD
@@ -132,11 +134,10 @@ SOFTWARE.
         }
         return count;
     }
-#endif
 
     int32_t TLGetProcessorInfo(int32_t* pNumPhysicalCores, int32_t* pNumLogicalCores)
     {
-        DWORD cores, logical;
+        uint32_t cores, logical;
         getProcessorCount(cores, logical);
 
         *pNumPhysicalCores = cores;
@@ -144,4 +145,13 @@ SOFTWARE.
 
         return 0;
     }
+#else
+
+    int32_t TLGetProcessorInfo(int32_t* pNumPhysicalCores, int32_t* pNumLogicalCores)
+		{
+			*pNumPhysicalCores = *pNumLogicalCores = std::thread::hardware_concurrency();
+			return 0;
+		}
+
+#endif
 }

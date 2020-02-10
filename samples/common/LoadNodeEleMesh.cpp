@@ -30,6 +30,14 @@ THE SOFTWARE.
 #include <vector>
 #include <assert.h>
 
+#if !defined(_MSC_VER)
+void fopen_s(FILE **f, const char *filename, const char *mode)
+{
+	*f = fopen(filename, mode);
+}
+#define fscanf_s fscanf
+#endif
+
 namespace AMD
 {
     int LoadNodeEleMeshNumVerts(const char* nodeFile)

@@ -30,7 +30,7 @@ namespace AMD
 
     TLTaskSystem* TLTaskSystem::pInstance = NULL;
 
-    uint32_t TLWorkerThread(void* inData)
+    void *TLWorkerThread(void* inData)
     {
         (void)inData;
         TLTaskSystem* taskSys = TLTaskSystem::Get();

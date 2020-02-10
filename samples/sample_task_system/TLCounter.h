@@ -29,8 +29,11 @@ THE SOFTWARE.
 #pragma once
 
 #include "TLCommon.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #include "Windows.h"
+#else
+#include <mutex>
+#include <condition_variable>
 #endif
 
 #define TL_WAKE_ONE 1
@@ -38,7 +41,7 @@ THE SOFTWARE.
 namespace AMD
 {
 
-#ifdef WIN32
+#ifdef _MSC_VER
     // Counter with condition variable, allowing threads to sleep until counter decremented to 0.
     // Counter value is signed to allow negative values, for cases with non-deterministic order of increments/decrements.
     // While counter value is <= 0 no thread can stay asleep - decrement to 0 will wake threads and prevent sleeping.
@@ -180,6 +183,131 @@ namespace AMD
             return lcounter;
         }
     };
+#else
+    class TLCounter
+    {
+				std::mutex mutex;
+				std::condition_variable condVar;
+				int32_t counter = 0;
+				int32_t numWaiters = 0;
+
+				using unique_lock = std::unique_lock<std::mutex>;
+
+    public:
+        TL_CLASS_NEW_DELETE(TLCounter)
+
+        inline TLCounter()
+        {
+        }
+
+        inline ~TLCounter()
+        {
+        }
+
+        // Wait/sleep while counter > 0
+        inline bool WaitUntilZero()
+        {
+            bool didWait = false;
+						unique_lock lock(mutex);
+            while (counter > 0)
+            {
+                numWaiters++;
+								condVar.wait(lock);
+                numWaiters--;
+
+                didWait = true;
+            }
+
+#if TL_WAKE_ONE
+            if (numWaiters > 0)
+            {
+								condVar.notify_one();
+            }
+#endif
+
+            return didWait;
+        }
+
+        // If counter > 0, wait until wakeup.
+        // Can use to put worker back into spin wait rather than sleep
+        inline bool WaitOneWakeup()
+        {
+            bool didWait = false;
+						unique_lock lock(mutex);
+            if (counter > 0)
+            {
+                numWaiters++;
+								condVar.wait(lock);
+                numWaiters--;
+
+                didWait = true;
+            }
+
+#if TL_WAKE_ONE
+            if (numWaiters > 0)
+            {
+								condVar.notify_one();
+            }
+#endif
+
+            return didWait;
+        }
+
+        // Increment count of active work
+        inline int32_t Increment()
+        {
+						unique_lock lock(mutex);
+						return ++counter;
+        }
+
+        // Decrement count of active work, and if 0, wake waiters
+        inline int32_t Decrement()
+        {
+						unique_lock lock(mutex);
+            counter--;
+            if (counter <= 0)
+            {
+                // Finish using all data before unlocking, in case waiting thread might delete this.
+
+#if TL_WAKE_ONE
+                // Wake one waiter
+								condVar.notify_one();
+#else
+								condVar.notify_all();
+#endif
+            }
+            return counter;
+        }
+
+        // Add to count of active work
+        inline int32_t Add(int32_t count)
+        {
+						unique_lock lock(mutex);
+            counter += count;
+            return counter;
+        }
+
+        // Subtract from count of active work, and if 0, wake waiters
+        inline int32_t Subtract(int32_t count)
+        {
+						unique_lock lock(mutex);
+            counter -= count;
+            if (counter <= 0)
+            {
+                // Finish using all data before unlocking, in case waiting thread might delete this.
+
+#if TL_WAKE_ONE
+                // Wake one waiter
+								condVar.notify_one();
+#else
+								condVar.notify_all();
+#endif
+            }
+
+            return counter;
+        }
+    };
+
 #endif
 
 }

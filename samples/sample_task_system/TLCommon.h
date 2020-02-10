@@ -49,15 +49,20 @@ THE SOFTWARE.
 #define TL_ASSERT(x)
 #endif
 #else
-#error "Not implemented"
-#define TL_FORCE_INLINE inline
-#define TL_ALIGN(x)
+#include <pthread.h>
+#include <xmmintrin.h>
+#define TL_FORCE_INLINE __attribute__((always_inline)) inline
+#define TL_ALIGN(x) __attribute__((align(x)))
 #define TL_ALIGN_END(x)
-#define TL_ALIGN_OF(x)
-#define TL_ALIGNED_MALLOC(size, alignment)
-#define TL_ALIGNED_FREE(ptr)
-#define TL_THREAD_LOCAL_STORAGE
+#define TL_ALIGN_OF(x) alignof(x)
+#define TL_ALIGNED_MALLOC(size, alignment) aligned_alloc(alignment, size)
+#define TL_ALIGNED_FREE(ptr) free(ptr)
+#define TL_THREAD_LOCAL_STORAGE thread_local
+#if _DEBUG
+#define TL_ASSERT(x) if (!(x)) { fprintf(stderr, "TL assert failed: " #x "\n"); assert(0); }
+#else
 #define TL_ASSERT(x)
+#endif
 #endif
 
 #define TL_CLASS_NEW_DELETE(T)\
@@ -125,7 +130,49 @@ namespace AMD
         Sleep(0);
     }
 #else
-#error "Not implemented"
+    typedef pthread_t TLThread;
+    typedef void* (*TLJoinableThreadFunc)(void *);
+
+    static inline void TLCreateJoinableThread(TLThread* thread, TLJoinableThreadFunc func, void* argList, size_t stackSize, const char* threadName)
+    {
+        (void)threadName;
+				(void)stackSize;
+
+				pthread_create(thread, NULL, func, argList);
+    }
+
+    static inline void TLExitJoinableThread()
+    {
+				pthread_exit(NULL);
+    }
+
+    static inline void TLJoinThread(TLThread thread)
+    {
+				pthread_join(thread, NULL);
+    }
+
+    // Pause for spin-waits
+    static TL_FORCE_INLINE void TLPause()
+    {
+        _mm_pause();
+    }
+
+    // Load fence; place after load of signal value and before loading data associated with signal
+    static TL_FORCE_INLINE void TLLoadFence()
+    {
+        _mm_lfence();
+    }
+
+    // Store fence; place before store of signal value and after storing data associated with signal
+    static TL_FORCE_INLINE void TLStoreFence()
+    {
+        _mm_sfence();
+    }
+
+    static TL_FORCE_INLINE void TLYield()
+    {
+        pthread_yield();
+    }
 #endif
 
     // Get a system time value
@@ -170,7 +217,36 @@ namespace AMD
         }
     };
 #else
-#error "Not implemented"
+    class TLTimer
+    {
+			uint64_t startTime;
+
+			static uint64_t timeNowUs()
+			{
+				struct timespec ts;
+				clock_gettime(CLOCK_MONOTONIC, &ts);
+				return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+			}
+    public:
+        TLTimer() : startTime(timeNowUs())
+        {
+        }
+
+        TL_FORCE_INLINE void SetStartTime()
+        {
+						startTime = timeNowUs();
+        }
+
+        TL_FORCE_INLINE int64_t GetElapsedMicroseconds()
+        {
+					return timeNowUs() - startTime;
+        }
+
+        TL_FORCE_INLINE bool HasElapsedMicroseconds(int64_t microseconds)
+        {
+            return GetElapsedMicroseconds() > microseconds;
+        }
+    };
 #endif
 
     // Atomic operations
@@ -273,6 +349,97 @@ namespace AMD
         return InterlockedExchange64((volatile LONG64 *)pValue, newValue);
     }
 
+#else
+
+    static TL_FORCE_INLINE int32_t TLAtomicIncrement(int32_t* pValue)
+    {
+        return __sync_add_and_fetch(pValue, 1);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicIncrement64(int64_t* pValue)
+    {
+        return __sync_add_and_fetch(pValue, 1);
+    }
+
+    static TL_FORCE_INLINE int32_t TLAtomicDecrement(int32_t* pValue)
+    {
+        return __sync_sub_and_fetch(pValue, 1);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicDecrement64(int64_t* pValue)
+    {
+        return __sync_sub_and_fetch(pValue, 1);
+    }
+
+    // Atomically add to *pValue and return result
+    static TL_FORCE_INLINE int32_t TLAtomicAdd(int32_t* pValue, int addedValue)
+    {
+        return __sync_add_and_fetch(pValue, addedValue);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicAdd64(int64_t* pValue, int64_t addedValue)
+    {
+        return __sync_add_and_fetch(pValue, addedValue);
+    }
+
+    // Atomically OR with *pValue and return result
+    static TL_FORCE_INLINE int32_t TLAtomicOr(int32_t* pValue, int32_t orValue)
+    {
+        return __sync_or_and_fetch(pValue, orValue);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicOr64(int64_t* pValue, int64_t orValue)
+    {
+        return __sync_or_and_fetch(pValue, orValue);
+    }
+
+    // Atomically AND with *pValue and return result
+    static TL_FORCE_INLINE int32_t TLAtomicAnd(int32_t* pValue, int32_t andValue)
+    {
+        return __sync_and_and_fetch(pValue, andValue);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicAnd64(int64_t* pValue, int64_t andValue)
+    {
+        return __sync_and_and_fetch(pValue, andValue);
+    }
+
+    // Atomically replace *pValue with newValue if currently equal to compareValue, and return the initial value
+    static TL_FORCE_INLINE int32_t TLAtomicCompareExchange(int32_t* pValue, int32_t newValue, int32_t compareValue)
+    {
+        return __sync_val_compare_and_swap(pValue, compareValue, newValue);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicCompareExchange64(int64_t* pValue, int64_t newValue, int64_t compareValue)
+    {
+        return __sync_val_compare_and_swap(pValue, compareValue, newValue);
+    }
+
+    // Atomically read current *pValue, with load fence
+    static TL_FORCE_INLINE int32_t TLAtomicRead(int32_t* pValue)
+    {
+        int32_t value = *(volatile unsigned long *)pValue;
+
+        // Ensure subsequent loads ordered after read of value
+        _mm_lfence();
+
+        return value;
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicRead64(int64_t* pValue)
+    {
+        int64_t value = *(volatile int64_t*)pValue;
+
+        // Ensure subsequent loads ordered after read of value
+        _mm_lfence();
+
+        return value;
+    }
+
+    // Atomically write to *pValue and return previous value
+    static TL_FORCE_INLINE int32_t TLAtomicWrite(int32_t* pValue, int32_t newValue)
+    {
+        return __atomic_exchange_n(pValue, newValue, __ATOMIC_SEQ_CST);
+    }
+    static TL_FORCE_INLINE int64_t TLAtomicWrite64(int64_t* pValue, int64_t newValue)
+    {
+        return __atomic_exchange_n(pValue, newValue, __ATOMIC_SEQ_CST);
+    }
+#endif
+
     // From "Use Best Practices with Spin Locks" by Kenneth Mitchell
     static TL_FORCE_INLINE void TLLock(int32_t* pl)
     {
@@ -287,7 +454,4 @@ namespace AMD
     {
         TLAtomicWrite(pl, 0);
     }
-#else
-#error "Not implemented"
-#endif
 }

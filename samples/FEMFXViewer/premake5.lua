@@ -28,10 +28,10 @@ TASK_SYSTEM_DIR = FEMFX_BASE_DIR.."samples/sample_task_system/"
     exceptionhandling ("Off")
     --callingconvention ("VectorCall")
 
-    defines { 
-        "WIN32", 
-        "NOMINMAX"
-	}
+		-- defines { 
+    --   "WIN32", 
+    --   "NOMINMAX"
+		--}
 
     objdir ('obj/'.._ACTION..'/%{cfg.architecture}')
     targetdir ( 'build/'.._ACTION..'/%{cfg.architecture}/%{cfg.buildcfg}' )
@@ -53,6 +53,8 @@ TASK_SYSTEM_DIR = FEMFX_BASE_DIR.."samples/sample_task_system/"
     GLFW_INCLUDE_DIR = FEMFX_BASE_DIR.."external/glfw/include/"
     GLFW_LIB_DIR = FEMFX_BASE_DIR.."external/glfw/lib-vc2017/"
     project (EXE_NAME)
+				buildoptions { "-mavx", "-mlzcnt", "-mfma", "-mavx2", "-ggdb3", "-pthreads" }
+				linkoptions { "-pthreads" }
         filename('%{prj.name}_'.._ACTION)
         targetname(EXE_NAME)
         kind "ConsoleApp"
@@ -68,7 +70,8 @@ TASK_SYSTEM_DIR = FEMFX_BASE_DIR.."samples/sample_task_system/"
         includedirs { GLFW_INCLUDE_DIR, GLFW_DEPS_DIR }
         includedirs { SRC_DIR, SAMPLES_COMMON_DIR }
 		libdirs { FEMFX_LIB_DIR, GLFW_LIB_DIR }
-        links { FEMFX_LIB_NAME, TASK_SYSTEM_NAME, "glfw3.lib", "odbc32.lib", "odbccp32.lib", "opengl32.lib", "glu32.lib" }
+        --links { FEMFX_LIB_NAME, TASK_SYSTEM_NAME, "glfw3.lib", "odbc32.lib", "odbccp32.lib", "opengl32.lib", "glu32.lib" }
+        links { FEMFX_LIB_NAME, TASK_SYSTEM_NAME, "glfw", "GL", "GLU" }
         --includedirs { METIS_DIR.."programs", METIS_DIR.."GKlib", METIS_DIR.."include", METIS_DIR.."libmetis" }
         --defines { "MSC", "USE_GKREGEX", "__thread=__declspec(thread)" } --for metis
         --links { "metis.lib" }

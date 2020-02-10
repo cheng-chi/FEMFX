@@ -31,7 +31,10 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
+
+#if defined(_MSC_VER)
 #include <Windows.h>
+#endif
 
 // GLFW includes
 #pragma warning(push, 0)
@@ -1572,6 +1575,7 @@ static void WindowSizeCallback(GLFWwindow*, int width, int height)
 #if !PERF_TEST
 static FM_FORCE_INLINE double GetTime()
 {
+#if defined(_MSC_VER)
     LARGE_INTEGER freq, counter;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&counter);
@@ -1580,6 +1584,11 @@ static FM_FORCE_INLINE double GetTime()
     uint64_t timeremainder = counter.QuadPart % freq.QuadPart;
 
     return ((double)timeseconds + (double)timeremainder / (double)freq.QuadPart) * 1000.0;
+#else
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		return ts.tv_sec + ts.tv_nsec * 1e-9;
+#endif
 }
 #endif
 

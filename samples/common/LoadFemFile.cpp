@@ -27,13 +27,12 @@ THE SOFTWARE.
 // Adapted from UE4 plugin code.
 //---------------------------------------------------------------------------------------
 #include "LoadFemFile.h"
-#include "FEMResource.h"
 
 #include <fstream>
 #include <sstream>
 #include <vector>
 #pragma warning(push, 0)
-#include "nlohmann\json.hpp"
+#include "nlohmann/json.hpp"
 #pragma warning(pop)
 
 using namespace std;

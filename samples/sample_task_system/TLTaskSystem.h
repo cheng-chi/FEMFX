@@ -41,7 +41,7 @@ namespace AMD
     extern TL_THREAD_LOCAL_STORAGE int32_t gTLWorkerThreadIndex;
 
     // Worker thread loop
-    uint32_t TLWorkerThread(void *inData);
+    void *TLWorkerThread(void *inData);
 
     // For detecting core count
     extern int32_t TLGetProcessorInfo(int32_t* pNumPhysicalCores, int32_t* pNumLogicalCores);
